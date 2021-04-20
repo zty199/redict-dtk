@@ -23,6 +23,10 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QComboBox>
+
+#include <DApplication>
+#include <DGuiApplicationHelper>
+
 #include "widgets/textedit.h"
 #include "youdaoapi.h"
 
@@ -40,6 +44,7 @@ protected:
 private:
     void translate();
     void handleTranslateFinished(const QString &result);
+    void initTheme(DGuiApplicationHelper::ColorType);
 
 private:
     TextEdit *m_orginEdit;

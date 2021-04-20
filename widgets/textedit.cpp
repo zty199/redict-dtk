@@ -18,6 +18,7 @@
  */
 
 #include "textedit.h"
+
 #include <QFocusEvent>
 
 TextEdit::TextEdit(QWidget *parent)
@@ -28,6 +29,7 @@ TextEdit::TextEdit(QWidget *parent)
 
 TextEdit::~TextEdit()
 {
+
 }
 
 void TextEdit::clearSelection()

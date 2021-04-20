@@ -18,7 +18,9 @@
  */
 
 #include <DApplication>
+#include <DApplicationSettings>
 #include <DWidgetUtil>
+
 #include "mainwindow.h"
 #include "utils.h"
 
@@ -26,12 +28,15 @@ DWIDGET_USE_NAMESPACE
 
 int main(int argc, char *argv[])
 {
-    DApplication::loadDXcbPlugin();
+    // DApplication::loadDXcbPlugin();
+    DApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     DApplication app(argc, argv);
+
     app.setAttribute(Qt::AA_UseHighDpiPixmaps);
     app.loadTranslator();
+
     app.setOrganizationName("deepin");
-    app.setApplicationVersion(DApplication::buildVersion("0.1"));
+    app.setApplicationVersion(DApplication::buildVersion("0.8"));
     app.setApplicationAcknowledgementPage("https://github.com/rekols");
     app.setProductIcon(QIcon(":/images/redict.svg"));
     app.setProductName(DApplication::translate("Main", "Rekols's Dictionary"));
@@ -40,6 +45,8 @@ int main(int argc, char *argv[])
     if (!app.setSingleInstance("redict")) {
         return -1;
     }
+
+    DApplicationSettings settings;
 
     MainWindow w;
     w.show();

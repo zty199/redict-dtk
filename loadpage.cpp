@@ -18,12 +18,13 @@
  */
 
 #include "loadpage.h"
+
 #include <QVBoxLayout>
 
 LoadPage::LoadPage(QWidget *parent)
-    : QWidget(parent),
-      m_spinner(new DSpinner),
-      m_isFinished(false)
+    : QWidget(parent)
+    , m_spinner(new DSpinner)
+    , m_isFinished(false)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(m_spinner, 0, Qt::AlignHCenter);
@@ -34,6 +35,7 @@ LoadPage::LoadPage(QWidget *parent)
 
 LoadPage::~LoadPage()
 {
+
 }
 
 void LoadPage::start()

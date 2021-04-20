@@ -18,11 +18,11 @@
  */
 
 #include "youdaoapi.h"
+
 #include <QUrlQuery>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-
 #include <QDebug>
 #include <QDateTime>
 
@@ -38,9 +38,10 @@ YoudaoAPI* YoudaoAPI::instance()
 }
 
 YoudaoAPI::YoudaoAPI(QObject *parent)
-    : QObject(parent),
-      m_http(new QNetworkAccessManager(this))
+    : QObject(parent)
+    , m_http(new QNetworkAccessManager(this))
 {
+
 }
 
 YoudaoAPI::~YoudaoAPI()
@@ -152,7 +153,7 @@ void YoudaoAPI::handleQueryWordFinished()
         QJsonArray explain = object.value("basic").toArray();
 
         // get the basic data.
-        for (const QJsonValue &value : explain) {
+        foreach (const QJsonValue &value, explain) {
             basicExplains.append(value.toString());
             basicExplains.append("<br>");
         }
@@ -160,12 +161,12 @@ void YoudaoAPI::handleQueryWordFinished()
         // Access to the web references.
         QJsonArray webRefArray = object.value("web").toArray();
         if (!webRefArray.isEmpty()) {
-            for (const QJsonValue &value : webRefArray) {
+            foreach (const QJsonValue &value, webRefArray) {
                 QJsonObject obj = value.toObject();
                 QString key = obj.keys().first();
                 QJsonArray arr = obj.value(key).toArray();
 
-                for (const QJsonValue &value : arr) {
+                foreach (const QJsonValue &value, arr) {
                     webReferences += "<br>";
                     webReferences += QString("• %1 : %2").arg(key).arg(value.toString());
                     webReferences += "</br>";
@@ -215,9 +216,9 @@ void YoudaoAPI::handleTranslateFinished()
     QJsonArray array = document.object().value("translateResult").toArray();
     QString text;
 
-    for (const QJsonValue &value : array) {
+    foreach (const QJsonValue &value, array) {
         QJsonArray arr = value.toArray();
-        for (const QJsonValue &value : arr) {
+        foreach (const QJsonValue &value, arr) {
             QString ret = value.toObject().value("tgt").toString();
             text += ret;
             text += "\n";
@@ -240,7 +241,7 @@ void YoudaoAPI::handleSuggestFinished()
     QJsonArray array = object.value("entries").toArray();
     QStringList list;
 
-    for (const QJsonValue &value : array) {
+    foreach (const QJsonValue &value, array) {
         QJsonObject obj = value.toObject();
         QString entry = obj.value("entry").toString();
         const QString explain = obj.value("explain").toString();

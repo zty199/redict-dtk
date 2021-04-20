@@ -18,6 +18,7 @@
  */
 
 #include "utils.h"
+
 #include <QApplication>
 #include <QImageReader>
 #include <QFile>
@@ -31,6 +32,7 @@ Utils::Utils(QObject *parent)
 
 Utils::~Utils()
 {
+
 }
 
 QString Utils::getQssContent(const QString &filePath)

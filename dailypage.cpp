@@ -17,19 +17,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "dailypage.h"
-#include "widgets/scrollarea.h"
 #include <QVBoxLayout>
 #include <QTimer>
 #include <QFile>
 #include <QDir>
 
+#include "dailypage.h"
+#include "widgets/scrollarea.h"
+
 DailyPage::DailyPage(QWidget *parent)
-    : QWidget(parent),
-      m_networkManager(new QNetworkAccessManager(this)),
-      m_imageLabel(new QLabel),
-      m_contentLabel(new QLabel),
-      m_api(YoudaoAPI::instance())
+    : QWidget(parent)
+    , m_networkManager(new QNetworkAccessManager(this))
+    , m_imageLabel(new QLabel)
+    , m_contentLabel(new QLabel)
+    , m_api(YoudaoAPI::instance())
 {
     ScrollArea *scrollArea = new ScrollArea;
     QWidget *contentWidget = new QWidget;
@@ -43,7 +44,6 @@ DailyPage::DailyPage(QWidget *parent)
     m_imageLabel->setFixedWidth(546);
     m_imageLabel->setScaledContents(true);
 
-    m_contentLabel->setStyleSheet("QLabel { font-size: 15px; }");
     m_contentLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     m_contentLabel->setWordWrap(true);
 
@@ -61,13 +61,18 @@ DailyPage::DailyPage(QWidget *parent)
     contentLayout->addLayout(textLayout);
     contentLayout->addStretch();
 
+    initTheme();
+
     QTimer::singleShot(100, m_api, &YoudaoAPI::queryDaily);
 
     connect(m_api, &YoudaoAPI::dailyFinished, this, &DailyPage::handleQueryFinished);
+
+    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, &DailyPage::initTheme);
 }
 
 DailyPage::~DailyPage()
 {
+
 }
 
 void DailyPage::checkDirectory()
@@ -111,21 +116,20 @@ void DailyPage::handleQueryFinished(std::tuple<QString, QString, QString, QStrin
         QNetworkRequest request(QUrl(std::get<4>(data)));
         m_networkManager->get(request);
 
-        connect(m_networkManager, &QNetworkAccessManager::finished, this,
-                [=] (QNetworkReply *reply) {
-                    QByteArray imgData = reply->readAll();
+        connect(m_networkManager, &QNetworkAccessManager::finished, this, [=] (QNetworkReply *reply) {
+            QByteArray imgData = reply->readAll();
 
-                    loadImage(imgData);
+            loadImage(imgData);
 
-                    // save image file to local.
-                    QFile file(picturePath);
-                    if (file.open(QIODevice::Append)) {
-                        file.write(imgData);
-                    }
-                    file.close();
+            // save image file to local.
+            QFile file(picturePath);
+            if (file.open(QIODevice::Append)) {
+                file.write(imgData);
+            }
+            file.close();
 
-                    m_networkManager->deleteLater();
-                });
+            m_networkManager->deleteLater();
+        });
     } else {
         // open local file.
         QFile file(picturePath);
@@ -139,7 +143,6 @@ void DailyPage::handleQueryFinished(std::tuple<QString, QString, QString, QStrin
         }
         file.close();
     }
-
 }
 
 void DailyPage::loadImage(const QByteArray &data)
@@ -149,4 +152,9 @@ void DailyPage::loadImage(const QByteArray &data)
     m_imageLabel->setPixmap(pixmap);
 
     emit loadFinished();
+}
+
+void DailyPage::initTheme()
+{
+    m_contentLabel->setStyleSheet(styleSheet() + "font-size: 15px;");
 }

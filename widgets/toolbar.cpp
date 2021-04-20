@@ -18,12 +18,14 @@
  */
 
 #include "toolbar.h"
-#include "utils.h"
+
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QDebug>
 #include <QEvent>
 #include <QMouseEvent>
+
+#include "utils.h"
 
 ToolBar::ToolBar(QWidget *parent)
     : QWidget(parent)
@@ -38,17 +40,67 @@ ToolBar::ToolBar(QWidget *parent)
     tabbar->setFocusPolicy(Qt::NoFocus);
     tabbar->installEventFilter(this);
 
+    initTheme(DGuiApplicationHelper::instance()->themeType());
+
     QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->addSpacing(5);
-    layout->addWidget(iconLabel);
-    layout->addSpacing(5);
+    // layout->addSpacing(5);
+    // layout->addWidget(iconLabel);
+    // layout->addSpacing(5);
     layout->addWidget(tabbar);
     layout->addStretch();
     layout->setMargin(0);
 
     connect(tabbar, &QTabBar::currentChanged, this, [=] (int current) { emit currentChanged(current); });
+
+    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, &ToolBar::initTheme);
 }
 
 ToolBar::~ToolBar()
 {
+
+}
+
+void ToolBar::initTheme(DGuiApplicationHelper::ColorType themeType)
+{
+    if (themeType == DGuiApplicationHelper::DarkType) {
+        tabbar->setStyleSheet(styleSheet() +
+                              "QTabBar::tab {"
+                              "font-size: 18px;"
+                              "height: 30px;"
+                              "padding: 9px;"
+                              "border: 0px;"
+                              "background-color: transparent;"
+                              "border-bottom: 3px solid transparent;"
+                              "width: 55px;"
+                              "color: palette(text);"
+                              "}"
+                              "QTabBar::tab:hover {"
+                              "background-color: #2F2F2F;"
+                              "}"
+                              "QTabBar::tab:selected {"
+                              "color: #2CA7F8;"
+                              "border: 0px;"
+                              "border-bottom: 3px solid #2CA7F8;"
+                              "}");
+    } else {
+        tabbar->setStyleSheet(styleSheet() +
+                              "QTabBar::tab {"
+                              "font-size: 18px;"
+                              "height: 30px;"
+                              "padding: 9px;"
+                              "border: 0px;"
+                              "background-color: transparent;"
+                              "border-bottom: 3px solid transparent;"
+                              "width: 55px;"
+                              "color: palette(text);"
+                              "}"
+                              "QTabBar::tab:hover {"
+                              "background-color: #EDEDED;"
+                              "}"
+                              "QTabBar::tab:selected {"
+                              "color: #2CA7F8;"
+                              "border: 0px;"
+                              "border-bottom: 3px solid #2CA7F8;"
+                              "}");
+    }
 }

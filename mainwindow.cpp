@@ -18,10 +18,8 @@
  */
 
 #include "mainwindow.h"
-#include "youdaoapi.h"
-#include "dtitlebar.h"
-#include "dthememanager.h"
-#include "utils.h"
+
+#include <DTitlebar>
 
 #include <QApplication>
 #include <QClipboard>
@@ -29,33 +27,38 @@
 #include <QKeyEvent>
 #include <QDebug>
 
+#include "youdaoapi.h"
+#include "utils.h"
+
 MainWindow::MainWindow(QWidget *parent)
-    : DMainWindow(parent),
-      m_mainLayout(new QStackedLayout),
-      m_toolBar(new ToolBar),
-      m_eventMonitor(new EventMonitor),
-      m_popupWindow(new PopupWindow),
-      m_homePage(new HomePage),
-      m_transPage(new TransPage),
-      m_trayIcon(new TrayIcon(this)),
-      m_settings(new QSettings("deepin", "redict")),
-      m_menu(new QMenu),
-      m_wordingAction(new QAction("划词翻译")),
-      m_trayIconAction(new QAction("托盘显示")),
-      m_themeAction(new QAction("暗色主题"))
+    : DMainWindow(parent)
+    , m_mainLayout(new QStackedLayout)
+    , m_toolBar(new ToolBar)
+    , m_eventMonitor(new EventMonitor)
+    , m_popupWindow(new PopupWindow)
+    , m_homePage(new HomePage)
+    , m_transPage(new TransPage)
+    , m_trayIcon(new TrayIcon(this))
+    , m_settings(new QSettings("deepin", "redict"))
+    , m_menu(new QMenu)
+    , m_wordingAction(new QAction("划词翻译"))
+    , m_trayIconAction(new QAction("托盘显示"))
+    // , m_themeAction(new QAction("暗色主题"))
 {
     m_eventMonitor->start();
 
-    titlebar()->setCustomWidget(m_toolBar, Qt::AlignVCenter, false);
+    titlebar()->setIcon(QIcon(":/images/redict.svg"));
+    titlebar()->addWidget(m_toolBar, Qt::AlignCenter);
     titlebar()->setSeparatorVisible(true);
-    titlebar()->setBackgroundTransparent(true);
-    titlebar()->setFixedHeight(40);
+    // titlebar()->setBackgroundTransparent(true);
     titlebar()->setMenu(m_menu);
 
+    /*
     // init settings.
     if (!m_settings->contains("darkTheme")) {
         m_settings->setValue("darkTheme", false);
     }
+    */
 
     installEventFilter(this);
 
@@ -67,19 +70,20 @@ MainWindow::MainWindow(QWidget *parent)
     centralWidget->setLayout(m_mainLayout);
     setWindowIcon(QIcon(":/images/redict.svg"));
     setCentralWidget(centralWidget);
-    setShadowOffset(QPoint(0, 0));
+    // setShadowOffset(QPoint(0, 0));
     setFixedSize(550, 428);
+    setWindowFlag(Qt::WindowMaximizeButtonHint, false);
 
     m_wordingAction->setCheckable(true);
     m_trayIconAction->setCheckable(true);
-    m_themeAction->setCheckable(true);
+    // m_themeAction->setCheckable(true);
 
     initWordingAction();
     initTrayIconAction();
-    initThemeAction();
+    // initThemeAction();
 
-    m_menu->addAction(m_themeAction);
-    m_menu->addSeparator();
+    // m_menu->addAction(m_themeAction);
+    // m_menu->addSeparator();
     m_menu->addAction(m_wordingAction);
     m_menu->addAction(m_trayIconAction);
 
@@ -87,7 +91,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_trayIcon, &TrayIcon::exitActionTriggered, qApp, &QApplication::quit);
     connect(m_wordingAction, &QAction::triggered, this, &MainWindow::handleWordingTriggered);
     connect(m_trayIconAction, &QAction::triggered, this, &MainWindow::handleTrayIconTriggered);
-    connect(m_themeAction, &QAction::triggered, this, &MainWindow::handleThemeTriggered);
+    // connect(m_themeAction, &QAction::triggered, this, &MainWindow::handleThemeTriggered);
     connect(m_toolBar, &ToolBar::currentChanged, m_mainLayout, &QStackedLayout::setCurrentIndex);
     connect(this, &MainWindow::requestKeyPressEvent, this, &MainWindow::keyPressEvent);
 }
@@ -126,7 +130,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 bool MainWindow::eventFilter(QObject *object, QEvent *event)
 {
     if (event->type() == QEvent::Move) {
-        QMoveEvent *moveEvent = static_cast<QMoveEvent *>(event);
+        // QMoveEvent *moveEvent = static_cast<QMoveEvent *>(event);
         if (m_toolBar->tabbar->currentIndex() == 0) {
         }
         m_homePage->updatePos();
@@ -171,6 +175,7 @@ void MainWindow::initTrayIconAction()
 
 void MainWindow::initThemeAction()
 {
+    /*
     bool isDark = m_settings->value("darkTheme").toBool();
 
     if (isDark) {
@@ -182,6 +187,7 @@ void MainWindow::initThemeAction()
         DThemeManager::instance()->setTheme("light");
         setStyleSheet(Utils::getQssContent(":/qss/light.qss"));
     }
+    */
 }
 
 void MainWindow::enableWording()
@@ -232,6 +238,7 @@ void MainWindow::handleTrayIconTriggered()
 
 void MainWindow::handleThemeTriggered()
 {
+    /*
     bool isDark = m_settings->value("darkTheme").toBool();
 
     if (isDark) {
@@ -241,4 +248,5 @@ void MainWindow::handleThemeTriggered()
     }
 
     initThemeAction();
+    */
 }

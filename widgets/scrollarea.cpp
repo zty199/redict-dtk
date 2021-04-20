@@ -18,6 +18,7 @@
  */
 
 #include "scrollarea.h"
+
 #include <QScrollBar>
 
 ScrollArea::ScrollArea(QWidget *parent)
@@ -29,9 +30,9 @@ ScrollArea::ScrollArea(QWidget *parent)
     setWidgetResizable(true);
 
     setViewportMargins(0, 0, -verticalScrollBar()->sizeHint().width(), 0);
-
 }
 
 ScrollArea::~ScrollArea()
 {
+
 }

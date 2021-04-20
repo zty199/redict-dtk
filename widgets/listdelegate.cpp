@@ -18,7 +18,10 @@
  */
 
 #include "listdelegate.h"
-#include "dthememanager.h"
+
+#include <DApplication>
+#include <DGuiApplicationHelper>
+
 #include <QPainter>
 
 DWIDGET_USE_NAMESPACE
@@ -31,11 +34,12 @@ ListDelegate::ListDelegate(QObject *parent)
 
 ListDelegate::~ListDelegate()
 {
+
 }
 
 void ListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    const bool isDarkTheme = DThemeManager::instance()->theme() == "dark";
+    const bool isDarkTheme = DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType;
     const QStringList data = index.data().toString().split(" | ");
     const QString entry = data.first();
     const QString explain = data.last();
@@ -44,9 +48,9 @@ void ListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
     // draw bottom line.
     if (index.row()) {
         if (isDarkTheme) {
-            painter->setPen(QColor(255, 255, 255, 255 * 0.1));
+            painter->setPen(QColor(255, 255, 255, 25));
         } else {
-            painter->setPen(QColor(0, 0, 0, 255 * 0.1));
+            painter->setPen(QColor(0, 0, 0, 25));
         }
 
         painter->drawLine(QPoint(rect.x(), rect.y() - 1),
@@ -86,5 +90,8 @@ void ListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
 
 QSize ListDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
+    Q_UNUSED(option)
+    Q_UNUSED(index)
+
     return QSize(-1, 35);
 }

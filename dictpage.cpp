@@ -18,21 +18,22 @@
  */
 
 #include "dictpage.h"
-#include "widgets/scrollarea.h"
-#include "dthememanager.h"
+
 #include <QVBoxLayout>
 #include <QScrollBar>
 
+#include "widgets/scrollarea.h"
+
 DictPage::DictPage(QWidget *parent)
-    : QWidget(parent),
-      m_api(YoudaoAPI::instance()),
-      m_wordLabel(new QLabel),
-      m_infoLabel(new QLabel),
-      m_ukLabel(new QLabel),
-      m_usLabel(new QLabel),
-      m_ukBtn(new DImageButton),
-      m_usBtn(new DImageButton),
-      m_audio(new QMediaPlayer)
+    : QWidget(parent)
+    , m_api(YoudaoAPI::instance())
+    , m_wordLabel(new QLabel)
+    , m_infoLabel(new QLabel)
+    , m_ukBtn(new DImageButton)
+    , m_usBtn(new DImageButton)
+    , m_ukLabel(new QLabel)
+    , m_usLabel(new QLabel)
+    , m_audio(new QMediaPlayer)
 {
     ScrollArea *contentFrame = new ScrollArea;
     m_scrollArea = contentFrame;
@@ -75,21 +76,18 @@ DictPage::DictPage(QWidget *parent)
     m_ukLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     m_usLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
-    m_wordLabel->setStyleSheet("QLabel { color: #2CA7F8; font-size: 25px; font-weight: bold; }");
-    m_infoLabel->setStyleSheet("QLabel { font-size: 16px; } ");
+    initTheme(DGuiApplicationHelper::instance()->themeType());
 
-    initTheme();
-
-    connect(DThemeManager::instance(), &DThemeManager::themeChanged, this, &DictPage::initTheme);
+    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, &DictPage::initTheme);
 
     connect(m_api, &YoudaoAPI::searchFinished, this, &DictPage::handleQueryFinished);
 
-    connect(m_ukBtn, &DImageButton::clicked, this, [=]{
+    connect(m_ukBtn, &DImageButton::clicked, this, [=] {
         m_audio->setMedia(QUrl("http://dict.youdao.com/dictvoice?type=1&audio=" + m_wordLabel->text()));
         m_audio->play();
     });
 
-    connect(m_usBtn, &DImageButton::clicked, this, [=]{
+    connect(m_usBtn, &DImageButton::clicked, this, [=] {
         m_audio->setMedia(QUrl("http://dict.youdao.com/dictvoice?type=2&audio=" + m_wordLabel->text()));
         m_audio->play();
     });
@@ -97,6 +95,7 @@ DictPage::DictPage(QWidget *parent)
 
 DictPage::~DictPage()
 {
+
 }
 
 void DictPage::queryWord(const QString &text)
@@ -117,11 +116,15 @@ void DictPage::queryWord(const QString &text)
     m_api->queryWord(text);
 }
 
-void DictPage::initTheme()
+void DictPage::initTheme(DGuiApplicationHelper::ColorType themeType)
 {
-    const bool isDark = DThemeManager::instance()->theme() == "dark";
+    // const bool isDark = DThemeManager::instance()->theme() == "dark";
 
-    if (isDark) {
+    m_scrollArea->setStyleSheet(styleSheet() + "border: none;");
+    m_wordLabel->setStyleSheet(styleSheet() + "color: #2CA7F8; font-size: 25px; font-weight: bold;");
+    m_infoLabel->setStyleSheet(styleSheet() + "font-size: 16px;");
+
+    if (themeType == DGuiApplicationHelper::DarkType) {
         m_ukBtn->setNormalPic(":/images/audio-dark-normal.svg");
         m_ukBtn->setHoverPic(":/images/audio-dark-hover.svg");
         m_ukBtn->setPressPic(":/images/audio-dark-press.svg");

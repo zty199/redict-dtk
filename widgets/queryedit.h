@@ -24,6 +24,10 @@
 #include <QListView>
 #include <QLabel>
 #include <QStringListModel>
+
+#include <DApplication>
+#include <DGuiApplicationHelper>
+
 #include "youdaoapi.h"
 #include "dsvgrenderer.h"
 #include "dimagebutton.h"
@@ -47,7 +51,7 @@ protected:
     void focusOutEvent(QFocusEvent *);
 
 private:
-    void initTheme();
+    void initTheme(DGuiApplicationHelper::ColorType);
     void handleSuggest(const QStringList &list);
 
 private:

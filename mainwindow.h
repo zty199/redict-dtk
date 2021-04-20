@@ -21,6 +21,7 @@
 #define MAINWINDOW_H
 
 #include <DMainWindow>
+
 #include <QStackedLayout>
 #include <QSettings>
 #include <QMenu>

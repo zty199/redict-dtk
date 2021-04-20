@@ -21,7 +21,8 @@
 #define LOADPAGE_H
 
 #include <QWidget>
-#include "dspinner.h"
+
+#include <DSpinner>
 
 DWIDGET_USE_NAMESPACE
 

@@ -23,6 +23,9 @@
 #include <QWidget>
 #include <QTabBar>
 
+#include <DApplication>
+#include <DGuiApplicationHelper>
+
 class ToolBar : public QWidget
 {
     Q_OBJECT
@@ -32,6 +35,9 @@ public:
     ~ToolBar();
 
     QTabBar *tabbar;
+
+private:
+    void initTheme(DGuiApplicationHelper::ColorType);
 
 signals:
     void currentChanged(int index);

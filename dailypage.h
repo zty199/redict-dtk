@@ -25,6 +25,10 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+
+#include <DApplication>
+#include <DGuiApplicationHelper>
+
 #include "youdaoapi.h"
 
 class DailyPage : public QWidget
@@ -43,6 +47,7 @@ private:
     void clearImageCache();
     void handleQueryFinished(std::tuple<QString, QString, QString, QString, QString>);
     void loadImage(const QByteArray &data);
+    void initTheme();
 
 private:
     QNetworkAccessManager *m_networkManager;

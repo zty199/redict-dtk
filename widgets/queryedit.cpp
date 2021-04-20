@@ -18,25 +18,25 @@
  */
 
 #include "queryedit.h"
-#include "utils.h"
-#include "listdelegate.h"
-#include "dthememanager.h"
 
 #include <QHBoxLayout>
 #include <QCompleter>
 #include <QKeyEvent>
 #include <QDebug>
 
+#include "utils.h"
+#include "listdelegate.h"
+
 QueryEdit::QueryEdit(QWidget *parent)
-    : QLineEdit(parent),
-      m_listView(new QListView(this)),
-      m_listModel(new QStringListModel(this)),
-      m_api(YoudaoAPI::instance()),
-      m_closeBtn(new DImageButton(":/images/close_normal.svg",
+    : QLineEdit(parent)
+    , m_listView(new QListView(this))
+    , m_listModel(new QStringListModel(this))
+    , m_api(YoudaoAPI::instance())
+    , m_closeBtn(new DImageButton(":/images/close_normal.svg",
                                   ":/images/close_hover.svg",
-                                  ":/images/close_press.svg")),
-      m_iconLabel(new QLabel),
-      m_isEnter(false)
+                                  ":/images/close_press.svg"))
+    , m_iconLabel(new QLabel)
+    , m_isEnter(false)
 {
     QHBoxLayout *layout = new QHBoxLayout;
     setLayout(layout);
@@ -57,41 +57,41 @@ QueryEdit::QueryEdit(QWidget *parent)
     setTextMargins(30, 0, 30, 0);
     setObjectName("QueryEdit");
     setFixedHeight(35);
-    initTheme();
 
-    connect(this, &QLineEdit::textChanged,
-            [=] {
-                const QString text = this->text();
+    initTheme(DGuiApplicationHelper::instance()->themeType());
 
-                if (text.isEmpty()) {
-                    m_closeBtn->hide();
-                    m_listView->hide();
-                } else {
-                    m_closeBtn->show();
-                }
+    connect(this, &QLineEdit::textChanged, [=] {
+        const QString text = this->text();
 
-                if (!m_isEnter) {
-                    m_api->suggest(text);
-                }
-            });
+        if (text.isEmpty()) {
+            m_closeBtn->hide();
+            m_listView->hide();
+        } else {
+            m_closeBtn->show();
+        }
+
+        if (!m_isEnter) {
+            m_api->suggest(text);
+        }
+    });
 
     connect(m_api, &YoudaoAPI::suggestFinished, this, &QueryEdit::handleSuggest);
     connect(m_closeBtn, &DImageButton::clicked, this, &QLineEdit::clear);
 
-    connect(m_listView, &QListView::clicked, this,
-            [=] (const QModelIndex &index) {
-                QStringList data = index.data().toString().split(" | ");
-                m_isEnter = true;
-                setText(data.first());
-                m_listView->hide();
-                selectAll();
-            });
+    connect(m_listView, &QListView::clicked, this, [=] (const QModelIndex &index) {
+        QStringList data = index.data().toString().split(" | ");
+        m_isEnter = true;
+        setText(data.first());
+        m_listView->hide();
+        selectAll();
+    });
 
-    connect(DThemeManager::instance(), &DThemeManager::themeChanged, this, &QueryEdit::initTheme);
+    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, &QueryEdit::initTheme);
 }
 
 QueryEdit::~QueryEdit()
 {
+
 }
 
 void QueryEdit::pressEnter()
@@ -150,9 +150,7 @@ void QueryEdit::keyPressEvent(QKeyEvent *e)
         } else if (e->key() == Qt::Key_Escape) {
             m_listView->hide();
         } else if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
-
             pressEnter();
-
         } else {
             m_isEnter = false;
             m_listView->hide();
@@ -172,16 +170,34 @@ void QueryEdit::focusOutEvent(QFocusEvent *e)
     m_listView->hide();
 }
 
-void QueryEdit::initTheme()
+void QueryEdit::initTheme(DGuiApplicationHelper::ColorType themeType)
 {
-    const bool isDark = DThemeManager::instance()->theme() == "dark";
+    // const bool isDark = DThemeManager::instance()->theme() == "dark";
 
     QPixmap iconPixmap;
 
-    if (isDark) {
+    if (themeType == DGuiApplicationHelper::DarkType) {
         iconPixmap = Utils::renderSVG(":/images/search_dark.svg", QSize(12, 12));
+        setStyleSheet("#QueryEdit {"
+                      "border: none;"
+                      "border-radius: none;"
+                      "background: #353535;"
+                      "}"
+                      "QListView {"
+                      "border: 1px solid #505050;"
+                      "background-color: #2D2D2D;"
+                      "}");
     } else {
         iconPixmap = Utils::renderSVG(":/images/search_light.svg", QSize(12, 12));
+        setStyleSheet("#QueryEdit {"
+                      "border: none;"
+                      "border-radius: none;"
+                      "background: #EDEDED;"
+                      "}"
+                      "QListView {"
+                      "border: 1px solid #2CA7F8;"
+                      "background: white;"
+                      "}");
     }
 
     m_iconLabel->setPixmap(iconPixmap);

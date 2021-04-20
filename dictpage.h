@@ -23,7 +23,11 @@
 #include <QWidget>
 #include <QLabel>
 #include <QMediaPlayer>
-#include "dimagebutton.h"
+
+#include <DApplication>
+#include <DGuiApplicationHelper>
+#include <DImageButton>
+
 #include "youdaoapi.h"
 
 DWIDGET_USE_NAMESPACE
@@ -40,7 +44,7 @@ public:
     void queryWord(const QString &text);
 
 private:
-    void initTheme();
+    void initTheme(DGuiApplicationHelper::ColorType);
     void handleQueryFinished(std::tuple<QString, QString, QString, QString, QString>);
 
 private:

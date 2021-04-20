@@ -18,11 +18,13 @@
  */
 
 #include "eventmonitor.h"
+
 #include <X11/Xlibint.h>
 
 EventMonitor::EventMonitor(QObject *parent)
     : QThread(parent)
 {
+
 }
 
 EventMonitor::~EventMonitor()
@@ -40,14 +42,14 @@ void EventMonitor::run()
     auto *display = QX11Info::display();
 
     // unable to open display.
-    if (display == 0) {
+    if (display == nullptr) {
         return;
     }
 
     XRecordClientSpec clients = XRecordAllClients;
     XRecordRange *range = XRecordAllocRange();
     // unable to allocate XRecordRange
-    if (range == 0) {
+    if (range == nullptr) {
         return;
     }
 
@@ -63,25 +65,25 @@ void EventMonitor::run()
 
     XSync(display, True);
 
-    Display *display_datalink = XOpenDisplay(0);
-    if (display_datalink == 0) {
+    Display *display_datalink = XOpenDisplay(nullptr);
+    if (display_datalink == nullptr) {
         return;
     }
 
-    if (!XRecordEnableContext(display_datalink, context, callback, (XPointer) this)) {
+    if (!XRecordEnableContext(display_datalink, context, callback, reinterpret_cast<XPointer>(this))) {
         return;
     }
 }
 
 void EventMonitor::callback(XPointer ptr, XRecordInterceptData* data)
 {
-    ((EventMonitor *) ptr)->handleEvent(data);
+    reinterpret_cast<EventMonitor *>(ptr)->handleEvent(data);
 }
 
 void EventMonitor::handleEvent(XRecordInterceptData* data)
 {
     if (data->category == XRecordFromServer) {
-        xEvent *event = (xEvent *)data->data;
+        xEvent *event = reinterpret_cast<xEvent *>(data->data);
 
         switch (event->u.u.type) {
         case ButtonPress:
