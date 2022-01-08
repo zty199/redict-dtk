@@ -24,7 +24,6 @@
 EventMonitor::EventMonitor(QObject *parent)
     : QThread(parent)
 {
-
 }
 
 EventMonitor::~EventMonitor()
@@ -75,12 +74,12 @@ void EventMonitor::run()
     }
 }
 
-void EventMonitor::callback(XPointer ptr, XRecordInterceptData* data)
+void EventMonitor::callback(XPointer ptr, XRecordInterceptData *data)
 {
     reinterpret_cast<EventMonitor *>(ptr)->handleEvent(data);
 }
 
-void EventMonitor::handleEvent(XRecordInterceptData* data)
+void EventMonitor::handleEvent(XRecordInterceptData *data)
 {
     if (data->category == XRecordFromServer) {
         xEvent *event = reinterpret_cast<xEvent *>(data->data);
@@ -92,7 +91,6 @@ void EventMonitor::handleEvent(XRecordInterceptData* data)
 
             // 鼠标左键点击
             if (event->u.u.detail == 1) {
-
             }
 
             break;
@@ -103,7 +101,6 @@ void EventMonitor::handleEvent(XRecordInterceptData* data)
 
             // 鼠标左键释放
             if (event->u.u.detail == 1) {
-
             }
             break;
 

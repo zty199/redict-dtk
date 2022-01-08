@@ -30,9 +30,10 @@ ScrollArea::ScrollArea(QWidget *parent)
     setWidgetResizable(true);
 
     setViewportMargins(0, 0, -verticalScrollBar()->sizeHint().width(), 0);
+
+    setFrameShape(QFrame::NoFrame);
 }
 
 ScrollArea::~ScrollArea()
 {
-
 }

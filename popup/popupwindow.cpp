@@ -19,60 +19,98 @@
 
 #include "popupwindow.h"
 #include "utils.h"
+#include "eventmonitor.h"
+
 #include <QMouseEvent>
 #include <QCloseEvent>
 #include <QPainter>
 #include <QDebug>
 
-#include "eventmonitor.h"
-
 PopupWindow::PopupWindow(QWidget *parent)
-    : QWidget(parent),
-      m_layout(new QStackedLayout(this)),
-      m_content(new PopupContent),
-      m_api(new YoudaoAPI),
-      m_eventMonitor(new EventMonitor)
+    : QWidget(parent)
+    , m_layout(new QStackedLayout(this))
+    , m_content(new PopupContent)
+    , m_api(new YoudaoAPI)
+    , m_eventMonitor(new EventMonitor)
 {
     connect(m_eventMonitor, &EventMonitor::buttonPress, this, &PopupWindow::onGlobMousePress, Qt::QueuedConnection);
 
-    m_iconPixmap = Utils::renderSVG(":/images/redict.svg", QSize(30, 30));
+    m_iconPixmap = Utils::renderSVG(":/images/redict.svg", QSize(32, 32));
 
     setWindowFlags(Qt::FramelessWindowHint | Qt::ToolTip);
     setAttribute(Qt::WA_TranslucentBackground);
     setCursor(Qt::PointingHandCursor);
-    setFixedSize(30, 30);
+    setFixedSize(32, 32);
 
     QWidget::hide();
 
     connect(m_api, &YoudaoAPI::searchFinished, m_content, &PopupContent::updateContent);
+    connect(m_content, &PopupContent::detailQueried, this, &PopupWindow::detailQueried);
 }
 
 PopupWindow::~PopupWindow()
 {
     delete m_content;
+    delete m_api;
+
+    if (m_eventMonitor) {
+        m_eventMonitor->quit();
+        m_eventMonitor->deleteLater();
+    }
+}
+
+PopupContent *PopupWindow::content()
+{
+    return m_content;
 }
 
 void PopupWindow::paintEvent(QPaintEvent *e)
 {
-    QWidget::paintEvent(e);
-
     QPainter painter(this);
     painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
+    painter.save();
 
     painter.drawPixmap(rect(), m_iconPixmap);
+
+    painter.restore();
+
+    QWidget::paintEvent(e);
 }
 
 void PopupWindow::mouseReleaseEvent(QMouseEvent *e)
 {
-    QWidget::mouseReleaseEvent(e);
-
     if (e->button() == Qt::LeftButton) {
-        QPoint pos = QCursor::pos();
         QWidget::hide();
 
+        m_content->move(geometry().bottomRight());
         m_content->show();
-        m_content->move(pos);
     }
+
+    QWidget::mouseReleaseEvent(e);
+}
+
+void PopupWindow::onGlobMousePress(const int &x, const int &y)
+{
+    QPoint mousePos(x, y);
+
+    if (m_content->isVisible()) {
+        const QRect rect = QRect(m_content->pos(), m_content->size());
+        if (rect.contains(mousePos)) {
+            return;
+        }
+    }
+
+    const QRect rect = QRect(pos(), size());
+    if (rect.contains(mousePos) && !m_content->isVisible()) {
+        return;
+    }
+
+    if (m_eventMonitor->isRunning()) {
+        m_eventMonitor->quit();
+    }
+
+    m_content->hide();
+    QWidget::hide();
 }
 
 void PopupWindow::popup(const QPoint &pos)
@@ -90,26 +128,4 @@ void PopupWindow::popup(const QPoint &pos)
 void PopupWindow::query(const QString &text)
 {
     m_api->queryWord(text);
-}
-
-void PopupWindow::onGlobMousePress(const int &x, const int &y)
-{
-    QPoint mousePos(x, y);
-
-    if (m_content->isVisible()) {
-        const QRect rect = QRect(m_content->pos(), m_content->size());
-        if (rect.contains(mousePos))
-            return;
-    }
-
-    const QRect rect = QRect(pos(), size());
-    if (rect.contains(mousePos))
-        return;
-
-    if (m_eventMonitor->isRunning()) {
-        m_eventMonitor->quit();
-    }
-
-    m_content->hide();
-    QWidget::hide();
 }

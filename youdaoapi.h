@@ -66,7 +66,6 @@ private slots:
 
 private:
     QNetworkAccessManager *m_http;
-
 };
 
 #endif

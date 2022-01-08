@@ -46,8 +46,8 @@ TrayIcon::~TrayIcon()
 void TrayIcon::iconActive(QSystemTrayIcon::ActivationReason reason)
 {
     if (reason == QSystemTrayIcon::Context) {
-        m_menu->show();        
+        m_menu->show();
     } else if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick) {
-        Q_EMIT openActionTriggered();
+        emit openActionTriggered();
     }
 }

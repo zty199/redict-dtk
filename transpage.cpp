@@ -23,6 +23,8 @@
 #include <QVBoxLayout>
 #include <QKeyEvent>
 
+#include <DPlatformTheme>
+
 TransPage::TransPage(QWidget *parent)
     : QWidget(parent)
     , m_orginEdit(new TextEdit)
@@ -54,19 +56,6 @@ TransPage::TransPage(QWidget *parent)
     layout->addWidget(m_transEdit);
 
     m_transBtn->setObjectName("QueryBtn");
-    m_transBtn->setStyleSheet("#QueryBtn {"
-                              "background-color: #2CA7F8;"
-                              "border: none;"
-                              "border-radius: 8px;"
-                              "font-size: 15px;"
-                              "color: white;"
-                              "}"
-                              "#QueryBtn:hover {"
-                              "background-color: #43B4FF;"
-                              "}"
-                              "#QueryBtn:pressed {"
-                              "background-color: #099DFF;"
-                              "}");
     m_transBtn->setFixedSize(130, 36);
 
     m_orginEdit->setPlaceholderText("请输入您要翻译的文字");
@@ -84,11 +73,33 @@ TransPage::TransPage(QWidget *parent)
     connect(m_orginEdit, &TextEdit::focusOut, [=] { m_orginEdit->clearSelection(); });
 
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, &TransPage::initTheme);
+
+    connect(DGuiApplicationHelper::instance()->systemTheme(), &DPlatformTheme::activeColorChanged, this, [=](QColor activeColor) {
+        QColor hover = DGuiApplicationHelper::adjustColor(activeColor, 0, 0, +10, 0, 0, 0, 0);
+        QColor press = DGuiApplicationHelper::adjustColor(activeColor, 0, 0, -10, 0, 0, 0, 0);
+        m_transBtn->setStyleSheet("#QueryBtn {"
+                                  "background-color: "
+                                  + QString::number(activeColor.rgb(), 16).replace(0, 2, '#') + ";"
+                                                                                                "border: none;"
+                                                                                                "border-radius: 8px;"
+                                                                                                "font-size: 15px;"
+                                                                                                "color: white;"
+                                                                                                "}"
+                                                                                                "#QueryBtn:hover {"
+                                                                                                "background-color: "
+                                  + QString::number(hover.rgb(), 16).replace(0, 2, '#') + ";"
+                                                                                          "}"
+                                                                                          "#QueryBtn:pressed {"
+                                                                                          "background-color: "
+                                  + QString::number(press.rgb(), 16).replace(0, 2, '#') + ";"
+                                                                                          "}");
+    });
+
+    emit DGuiApplicationHelper::instance()->systemTheme()->activeColorChanged(DGuiApplicationHelper::instance()->applicationPalette().highlight().color());
 }
 
 TransPage::~TransPage()
 {
-
 }
 
 void TransPage::keyPressEvent(QKeyEvent *e)
@@ -150,42 +161,37 @@ void TransPage::handleTranslateFinished(const QString &result)
 
 void TransPage::initTheme(DGuiApplicationHelper::ColorType themeType)
 {
-    if (themeType == DGuiApplicationHelper::DarkType)
-    {
+    if (themeType == DGuiApplicationHelper::DarkType) {
         m_typeBox->setStyleSheet(styleSheet() + "font-size: 15px;");
-        m_orginEdit->setStyleSheet(styleSheet() +
-                                   "QPlainTextEdit {"
-                                   "background-color: #2D2D2D;"
-                                   "border: 1px solid #151515;"
-                                   "border-radius: 8px;"
-                                   "padding: 5px;"
-                                   "font-size: 15px;"
-                                   "}");
-        m_transEdit->setStyleSheet(styleSheet() +
-                                   "QPlainTextEdit {"
-                                   "background-color: #2D2D2D;"
-                                   "border: 1px solid #151515;"
-                                   "border-radius: 8px;"
-                                   "padding: 5px;"
-                                   "font-size: 15px;"
-                                   "}");
+        m_orginEdit->setStyleSheet(styleSheet() + "QPlainTextEdit {"
+                                                  "background-color: #2D2D2D;"
+                                                  "border: 1px solid #151515;"
+                                                  "border-radius: 8px;"
+                                                  "padding: 5px;"
+                                                  "font-size: 15px;"
+                                                  "}");
+        m_transEdit->setStyleSheet(styleSheet() + "QPlainTextEdit {"
+                                                  "background-color: #2D2D2D;"
+                                                  "border: 1px solid #151515;"
+                                                  "border-radius: 8px;"
+                                                  "padding: 5px;"
+                                                  "font-size: 15px;"
+                                                  "}");
     } else {
         m_typeBox->setStyleSheet(styleSheet() + "font-size: 15px;");
-        m_orginEdit->setStyleSheet(styleSheet() +
-                                   "QPlainTextEdit {"
-                                   "background-color: #F2F2F2;"
-                                   "border: 1px solid #E8E8E8;"
-                                   "border-radius: 8px;"
-                                   "padding: 5px;"
-                                   "font-size: 15px;"
-                                   "}");
-        m_transEdit->setStyleSheet(styleSheet() +
-                                   "QPlainTextEdit {"
-                                   "background-color: #F2F2F2;"
-                                   "border: 1px solid #E8E8E8;"
-                                   "border-radius: 8px;"
-                                   "padding: 5px;"
-                                   "font-size: 15px;"
-                                   "}");
+        m_orginEdit->setStyleSheet(styleSheet() + "QPlainTextEdit {"
+                                                  "background-color: #F2F2F2;"
+                                                  "border: 1px solid #E8E8E8;"
+                                                  "border-radius: 8px;"
+                                                  "padding: 5px;"
+                                                  "font-size: 15px;"
+                                                  "}");
+        m_transEdit->setStyleSheet(styleSheet() + "QPlainTextEdit {"
+                                                  "background-color: #F2F2F2;"
+                                                  "border: 1px solid #E8E8E8;"
+                                                  "border-radius: 8px;"
+                                                  "padding: 5px;"
+                                                  "font-size: 15px;"
+                                                  "}");
     }
 }

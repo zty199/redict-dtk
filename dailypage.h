@@ -21,15 +21,17 @@
 #define DAILYPAGE_H
 
 #include <QWidget>
-#include <QLabel>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
 #include <DApplication>
 #include <DGuiApplicationHelper>
+#include <DLabel>
 
 #include "youdaoapi.h"
+
+DWIDGET_USE_NAMESPACE
 
 class DailyPage : public QWidget
 {
@@ -51,8 +53,8 @@ private:
 
 private:
     QNetworkAccessManager *m_networkManager;
-    QLabel *m_imageLabel;
-    QLabel *m_contentLabel;
+    DLabel *m_imageLabel;
+    DLabel *m_contentLabel;
     YoudaoAPI *m_api;
 };
 

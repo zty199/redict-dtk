@@ -18,36 +18,71 @@
  */
 
 #include "dictpage.h"
+#include "widgets/scrollarea.h"
 
-#include <QVBoxLayout>
+#include <QLayout>
 #include <QScrollBar>
 
-#include "widgets/scrollarea.h"
+#include <DPaletteHelper>
+#include <DPlatformTheme>
 
 DictPage::DictPage(QWidget *parent)
     : QWidget(parent)
     , m_api(YoudaoAPI::instance())
-    , m_wordLabel(new QLabel)
-    , m_infoLabel(new QLabel)
-    , m_ukBtn(new DImageButton)
-    , m_usBtn(new DImageButton)
-    , m_ukLabel(new QLabel)
-    , m_usLabel(new QLabel)
+    , m_wordLabel(new DLabel)
+    , m_infoLabel(new DLabel)
+    , m_ukBtn(new DIconButton(DStyle::SP_MediaVolumeHighElement))
+    , m_usBtn(new DIconButton(DStyle::SP_MediaVolumeHighElement))
+    , m_ukLabel(new DLabel)
+    , m_usLabel(new DLabel)
     , m_audio(new QMediaPlayer)
+    , m_scrollArea(new ScrollArea)
+    , m_text("")
 {
-    ScrollArea *contentFrame = new ScrollArea;
-    m_scrollArea = contentFrame;
-    contentFrame->setWidgetResizable(true);
+    initUI();
+    initConnections();
+}
+
+DictPage::~DictPage()
+{
+    delete m_audio;
+}
+
+void DictPage::queryWord(const QString &text)
+{
+    if (text == m_text) {
+        return;
+    }
+    m_text = text;
+
+    // init status.
+    m_wordLabel->setVisible(false);
+    m_infoLabel->setVisible(false);
+    m_usBtn->setVisible(false);
+    m_ukBtn->setVisible(false);
+    m_usLabel->setVisible(false);
+    m_ukLabel->setVisible(false);
+
+    m_scrollArea->verticalScrollBar()->setValue(m_scrollArea->verticalScrollBar()->minimum());
+    m_api->queryWord(text);
+}
+
+void DictPage::initUI()
+{
+    m_scrollArea->setFrameShape(QFrame::NoFrame);
+    m_scrollArea->setWidgetResizable(true);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(contentFrame);
-    layout->addSpacing(15);
+    layout->setSpacing(0);
+    layout->addWidget(m_scrollArea);
 
-    QWidget *contentWidget = new QWidget;
+    QWidget *contentWidget = new QWidget(m_scrollArea);
     QVBoxLayout *contentLayout = new QVBoxLayout(contentWidget);
-    QHBoxLayout *phoneticLayout = new QHBoxLayout;
 
+    QHBoxLayout *phoneticLayout = new QHBoxLayout;
+    phoneticLayout->setMargin(0);
+    phoneticLayout->setSpacing(0);
     phoneticLayout->addWidget(m_ukLabel);
     phoneticLayout->addSpacing(5);
     phoneticLayout->addWidget(m_ukBtn);
@@ -57,88 +92,72 @@ DictPage::DictPage(QWidget *parent)
     phoneticLayout->addWidget(m_usBtn);
     phoneticLayout->addStretch();
 
+    contentLayout->setContentsMargins(20, 0, 35, 0);
     contentLayout->setSpacing(0);
-    contentLayout->setContentsMargins(20, 0, 20, 0);
-    contentLayout->addSpacing(8);
+    contentLayout->setAlignment(Qt::AlignTop);
+    contentLayout->addSpacing(5);
     contentLayout->addWidget(m_wordLabel);
     contentLayout->addSpacing(4);
     contentLayout->addLayout(phoneticLayout);
     contentLayout->addSpacing(6);
     contentLayout->addWidget(m_infoLabel);
-    contentLayout->addStretch();
+    contentLayout->addSpacing(10);
 
-    contentFrame->setWidget(contentWidget);
+    m_scrollArea->setWidget(contentWidget);
+
+    QFont font = m_wordLabel->font();
+    font.setPixelSize(32);
+    font.setBold(true);
+    m_wordLabel->setFont(font);
+    font = m_ukBtn->font();
+    font.setPixelSize(14);
+    m_ukLabel->setFont(font);
+    m_usLabel->setFont(font);
+    font = m_infoLabel->font();
+    font.setPixelSize(16);
+    m_infoLabel->setFont(font);
 
     m_wordLabel->setWordWrap(true);
     m_infoLabel->setWordWrap(true);
 
-    m_infoLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     m_ukLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     m_usLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    m_infoLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    m_ukBtn->setIconSize(QSize(20, 20));
+    m_usBtn->setIconSize(QSize(20, 20));
+    m_ukBtn->setFlat(true);
+    m_usBtn->setFlat(true);
 
     initTheme(DGuiApplicationHelper::instance()->themeType());
+}
 
+void DictPage::initConnections()
+{
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, &DictPage::initTheme);
 
     connect(m_api, &YoudaoAPI::searchFinished, this, &DictPage::handleQueryFinished);
 
-    connect(m_ukBtn, &DImageButton::clicked, this, [=] {
+    connect(m_ukBtn, &DIconButton::clicked, this, [=] {
         m_audio->setMedia(QUrl("http://dict.youdao.com/dictvoice?type=1&audio=" + m_wordLabel->text()));
         m_audio->play();
     });
 
-    connect(m_usBtn, &DImageButton::clicked, this, [=] {
+    connect(m_usBtn, &DIconButton::clicked, this, [=] {
         m_audio->setMedia(QUrl("http://dict.youdao.com/dictvoice?type=2&audio=" + m_wordLabel->text()));
         m_audio->play();
     });
-}
 
-DictPage::~DictPage()
-{
-
-}
-
-void DictPage::queryWord(const QString &text)
-{
-    // init status.
-    m_wordLabel->setVisible(false);
-    m_infoLabel->setVisible(false);
-    m_usBtn->setVisible(false);
-    m_ukBtn->setVisible(false);
-    m_usLabel->setVisible(false);
-    m_ukLabel->setVisible(false);
-
-    if (text == m_wordLabel->text()) {
-        return;
-    }
-
-    m_scrollArea->verticalScrollBar()->setValue(0);
-    m_api->queryWord(text);
+    connect(DGuiApplicationHelper::instance()->systemTheme(), &DPlatformTheme::activeColorChanged, this, [=](QColor activeColor) {
+        DPalette palette = DPaletteHelper::instance()->palette(m_wordLabel);
+        palette.setColor(DPalette::WindowText, activeColor);
+        DPaletteHelper::instance()->setPalette(m_wordLabel, palette);
+    });
 }
 
 void DictPage::initTheme(DGuiApplicationHelper::ColorType themeType)
 {
-    // const bool isDark = DThemeManager::instance()->theme() == "dark";
-
-    m_scrollArea->setStyleSheet(styleSheet() + "border: none;");
-    m_wordLabel->setStyleSheet(styleSheet() + "color: #2CA7F8; font-size: 25px; font-weight: bold;");
-    m_infoLabel->setStyleSheet(styleSheet() + "font-size: 16px;");
-
-    if (themeType == DGuiApplicationHelper::DarkType) {
-        m_ukBtn->setNormalPic(":/images/audio-dark-normal.svg");
-        m_ukBtn->setHoverPic(":/images/audio-dark-hover.svg");
-        m_ukBtn->setPressPic(":/images/audio-dark-press.svg");
-        m_usBtn->setNormalPic(":/images/audio-dark-normal.svg");
-        m_usBtn->setHoverPic(":/images/audio-dark-hover.svg");
-        m_usBtn->setPressPic(":/images/audio-dark-press.svg");
-    } else {
-        m_ukBtn->setNormalPic(":/images/audio-light-normal.svg");
-        m_ukBtn->setHoverPic(":/images/audio-light-hover.svg");
-        m_ukBtn->setPressPic(":/images/audio-light-press.svg");
-        m_usBtn->setNormalPic(":/images/audio-light-normal.svg");
-        m_usBtn->setHoverPic(":/images/audio-light-hover.svg");
-        m_usBtn->setPressPic(":/images/audio-light-press.svg");
-    }
+    Q_UNUSED(themeType)
 }
 
 void DictPage::handleQueryFinished(std::tuple<QString, QString, QString, QString, QString> data)
@@ -173,9 +192,11 @@ void DictPage::handleQueryFinished(std::tuple<QString, QString, QString, QString
     QString text = basicExplains;
 
     if (!webReferences.isEmpty()) {
-        text += "<br><b>网络释义</b></br>";
+        text += "<br>网络释义</br>";
         text += webReferences;
     }
+    text.replace("<br>", "\n");
+    text.remove("</br>");
 
     m_infoLabel->setVisible(true);
     m_infoLabel->setText(text);

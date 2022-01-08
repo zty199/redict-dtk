@@ -24,6 +24,9 @@
 #include <QTimer>
 #include <QDebug>
 
+#include <DGuiApplicationHelper>
+#include <DPlatformTheme>
+
 HomePage::HomePage(QWidget *parent)
     : QWidget(parent)
     , m_layout(new QStackedLayout)
@@ -31,34 +34,22 @@ HomePage::HomePage(QWidget *parent)
     , m_dictPage(new DictPage)
     , m_loadPage(new LoadPage)
     , m_queryEdit(new QueryEdit)
+    , m_queryBtn(new QPushButton("查询"))
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    QPushButton *queryBtn = new QPushButton("查询");
 
     QHBoxLayout *queryLayout = new QHBoxLayout;
-    queryLayout->addWidget(m_queryEdit);
-    queryLayout->addWidget(queryBtn);
     queryLayout->setSpacing(0);
     queryLayout->setMargin(0);
+    queryLayout->addWidget(m_queryEdit);
+    queryLayout->addWidget(m_queryBtn);
 
-    queryBtn->setFocusPolicy(Qt::NoFocus);
-    queryBtn->setObjectName("QueryBtn");
-    queryBtn->setStyleSheet("#QueryBtn {"
-                            "background-color: #2CA7F8;"
-                            "border: none;"
-                            "border-radius: none;"
-                            "font-size: 15px;"
-                            "color: white;"
-                            "}"
-                            "#QueryBtn:hover {"
-                            "background-color: #43B4FF;"
-                            "}"
-                            "#QueryBtn:pressed {"
-                            "background-color: #099DFF;"
-                            "}");
-    queryBtn->setFixedSize(90, 35);
+    m_queryBtn->setFocusPolicy(Qt::NoFocus);
+    m_queryBtn->setObjectName("QueryBtn");
+    m_queryBtn->setFixedSize(90, 35);
 
     mainLayout->setMargin(0);
+    mainLayout->setSpacing(0);
     mainLayout->addSpacing(1);
     mainLayout->addLayout(queryLayout);
     mainLayout->addLayout(m_layout);
@@ -74,21 +65,43 @@ HomePage::HomePage(QWidget *parent)
 
     connect(m_queryEdit, &QLineEdit::returnPressed, this, &HomePage::queryWord);
     connect(m_queryEdit, &QLineEdit::textChanged, this, &HomePage::queryWord);
-
-    connect(queryBtn, &QPushButton::pressed, this, [=] {
+    connect(m_queryBtn, &QPushButton::clicked, this, [=]() {
         queryWord();
         m_queryEdit->pressEnter();
     });
 
     connect(m_dailyPage, &DailyPage::loadFinished, this, [=] {
         m_layout->setCurrentIndex(0);
+        m_queryEdit->setFocus();
         m_loadPage->stop();
     });
+
+    connect(DGuiApplicationHelper::instance()->systemTheme(), &DPlatformTheme::activeColorChanged, this, [=](QColor activeColor) {
+        QColor hover = DGuiApplicationHelper::adjustColor(activeColor, 0, 0, +10, 0, 0, 0, 0);
+        QColor press = DGuiApplicationHelper::adjustColor(activeColor, 0, 0, -10, 0, 0, 0, 0);
+        m_queryBtn->setStyleSheet("#QueryBtn {"
+                                  "background-color: "
+                                  + QString::number(activeColor.rgb(), 16).replace(0, 2, '#') + ";"
+                                                                                                "border: none;"
+                                                                                                "border-radius: none;"
+                                                                                                "font-size: 15px;"
+                                                                                                "color: white;"
+                                                                                                "}"
+                                                                                                "#QueryBtn:hover {"
+                                                                                                "background-color: "
+                                  + QString::number(hover.rgb(), 16).replace(0, 2, '#') + ";"
+                                                                                          "}"
+                                                                                          "#QueryBtn:pressed {"
+                                                                                          "background-color: "
+                                  + QString::number(press.rgb(), 16).replace(0, 2, '#') + ";"
+                                                                                          "}");
+    });
+
+    emit DGuiApplicationHelper::instance()->systemTheme()->activeColorChanged(DGuiApplicationHelper::instance()->applicationPalette().highlight().color());
 }
 
 HomePage::~HomePage()
 {
-
 }
 
 void HomePage::updatePos()
@@ -96,14 +109,25 @@ void HomePage::updatePos()
     m_queryEdit->updatePos();
 }
 
+void HomePage::detailQueried(QString queriedWord)
+{
+    if (!queriedWord.isEmpty()) {
+        m_queryEdit->setText(queriedWord);
+        QTimer::singleShot(100, this, [=]() {
+            m_queryEdit->pressEnter();
+        });
+    }
+}
+
 void HomePage::queryWord()
 {
-    const QString &text = m_queryEdit->text();
+    QString text = m_queryEdit->text();
+    text = text.trimmed();
 
     if (text.isEmpty()) {
         m_layout->setCurrentIndex(0);
     } else {
         m_layout->setCurrentIndex(1);
-        m_dictPage->queryWord(m_queryEdit->text());
+        m_dictPage->queryWord(text);
     }
 }

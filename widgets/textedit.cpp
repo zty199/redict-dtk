@@ -24,12 +24,10 @@
 TextEdit::TextEdit(QWidget *parent)
     : QPlainTextEdit(parent)
 {
-
 }
 
 TextEdit::~TextEdit()
 {
-
 }
 
 void TextEdit::clearSelection()

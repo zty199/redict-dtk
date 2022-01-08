@@ -22,11 +22,12 @@
 
 #include <QWidget>
 #include <QStackedLayout>
+#include <QPushButton>
 
-#include "widgets/queryedit.h"
 #include "dailypage.h"
 #include "dictpage.h"
 #include "loadpage.h"
+#include "widgets/queryedit.h"
 
 class HomePage : public QWidget
 {
@@ -37,6 +38,7 @@ public:
     ~HomePage();
 
     void updatePos();
+    void detailQueried(QString queriedWord);
 
 private:
     void queryWord();
@@ -47,6 +49,7 @@ private:
     DictPage *m_dictPage;
     LoadPage *m_loadPage;
     QueryEdit *m_queryEdit;
+    QPushButton *m_queryBtn;
 
     int m_currentIndex = 0;
 };

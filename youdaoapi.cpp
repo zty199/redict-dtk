@@ -28,7 +28,7 @@
 
 static YoudaoAPI *INSTANCE = nullptr;
 
-YoudaoAPI* YoudaoAPI::instance()
+YoudaoAPI *YoudaoAPI::instance()
 {
     if (INSTANCE == nullptr) {
         INSTANCE = new YoudaoAPI;
@@ -41,7 +41,6 @@ YoudaoAPI::YoudaoAPI(QObject *parent)
     : QObject(parent)
     , m_http(new QNetworkAccessManager(this))
 {
-
 }
 
 YoudaoAPI::~YoudaoAPI()

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QVBoxLayout>
+#include <QLayout>
 #include <QTimer>
 #include <QFile>
 #include <QDir>
@@ -28,8 +28,8 @@
 DailyPage::DailyPage(QWidget *parent)
     : QWidget(parent)
     , m_networkManager(new QNetworkAccessManager(this))
-    , m_imageLabel(new QLabel)
-    , m_contentLabel(new QLabel)
+    , m_imageLabel(new DLabel)
+    , m_contentLabel(new DLabel)
     , m_api(YoudaoAPI::instance())
 {
     ScrollArea *scrollArea = new ScrollArea;
@@ -40,8 +40,8 @@ DailyPage::DailyPage(QWidget *parent)
     QVBoxLayout *contentLayout = new QVBoxLayout(contentWidget);
     QVBoxLayout *textLayout = new QVBoxLayout;
 
-    m_imageLabel->setFixedHeight(200);
-    m_imageLabel->setFixedWidth(546);
+    m_imageLabel->setFixedHeight(225);
+    m_imageLabel->setFixedWidth(600);
     m_imageLabel->setScaledContents(true);
 
     m_contentLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
@@ -66,13 +66,10 @@ DailyPage::DailyPage(QWidget *parent)
     QTimer::singleShot(100, m_api, &YoudaoAPI::queryDaily);
 
     connect(m_api, &YoudaoAPI::dailyFinished, this, &DailyPage::handleQueryFinished);
-
-    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, &DailyPage::initTheme);
 }
 
 DailyPage::~DailyPage()
 {
-
 }
 
 void DailyPage::checkDirectory()
@@ -116,7 +113,7 @@ void DailyPage::handleQueryFinished(std::tuple<QString, QString, QString, QStrin
         QNetworkRequest request(QUrl(std::get<4>(data)));
         m_networkManager->get(request);
 
-        connect(m_networkManager, &QNetworkAccessManager::finished, this, [=] (QNetworkReply *reply) {
+        connect(m_networkManager, &QNetworkAccessManager::finished, this, [=](QNetworkReply *reply) {
             QByteArray imgData = reply->readAll();
 
             loadImage(imgData);
@@ -156,5 +153,7 @@ void DailyPage::loadImage(const QByteArray &data)
 
 void DailyPage::initTheme()
 {
-    m_contentLabel->setStyleSheet(styleSheet() + "font-size: 15px;");
+    QFont font = m_contentLabel->font();
+    font.setPixelSize(16);
+    m_contentLabel->setFont(font);
 }

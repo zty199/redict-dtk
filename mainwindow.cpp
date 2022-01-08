@@ -19,13 +19,12 @@
 
 #include "mainwindow.h"
 
-#include <DTitlebar>
-
 #include <QApplication>
 #include <QClipboard>
 #include <QCloseEvent>
 #include <QKeyEvent>
-#include <QDebug>
+
+#include <DTitlebar>
 
 #include "youdaoapi.h"
 #include "utils.h"
@@ -43,22 +42,14 @@ MainWindow::MainWindow(QWidget *parent)
     , m_menu(new QMenu)
     , m_wordingAction(new QAction("划词翻译"))
     , m_trayIconAction(new QAction("托盘显示"))
-    // , m_themeAction(new QAction("暗色主题"))
 {
     m_eventMonitor->start();
 
     titlebar()->setIcon(QIcon(":/images/redict.svg"));
     titlebar()->addWidget(m_toolBar, Qt::AlignCenter);
     titlebar()->setSeparatorVisible(true);
-    // titlebar()->setBackgroundTransparent(true);
+    //    titlebar()->setBackgroundTransparent(true);
     titlebar()->setMenu(m_menu);
-
-    /*
-    // init settings.
-    if (!m_settings->contains("darkTheme")) {
-        m_settings->setValue("darkTheme", false);
-    }
-    */
 
     installEventFilter(this);
 
@@ -70,20 +61,16 @@ MainWindow::MainWindow(QWidget *parent)
     centralWidget->setLayout(m_mainLayout);
     setWindowIcon(QIcon(":/images/redict.svg"));
     setCentralWidget(centralWidget);
-    // setShadowOffset(QPoint(0, 0));
-    setFixedSize(550, 428);
+    //    setShadowOffset(QPoint(0, 0));
+    setFixedSize(600, 450);
     setWindowFlag(Qt::WindowMaximizeButtonHint, false);
 
     m_wordingAction->setCheckable(true);
     m_trayIconAction->setCheckable(true);
-    // m_themeAction->setCheckable(true);
 
     initWordingAction();
     initTrayIconAction();
-    // initThemeAction();
 
-    // m_menu->addAction(m_themeAction);
-    // m_menu->addSeparator();
     m_menu->addAction(m_wordingAction);
     m_menu->addAction(m_trayIconAction);
 
@@ -91,9 +78,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_trayIcon, &TrayIcon::exitActionTriggered, qApp, &QApplication::quit);
     connect(m_wordingAction, &QAction::triggered, this, &MainWindow::handleWordingTriggered);
     connect(m_trayIconAction, &QAction::triggered, this, &MainWindow::handleTrayIconTriggered);
-    // connect(m_themeAction, &QAction::triggered, this, &MainWindow::handleThemeTriggered);
     connect(m_toolBar, &ToolBar::currentChanged, m_mainLayout, &QStackedLayout::setCurrentIndex);
     connect(this, &MainWindow::requestKeyPressEvent, this, &MainWindow::keyPressEvent);
+
+    connect(m_popupWindow, &PopupWindow::detailQueried, this, [=](QString queryWord) {
+        activeWindow();
+        m_toolBar->tabbar->setCurrentIndex(0);
+        m_homePage->detailQueried(queryWord);
+    });
 }
 
 MainWindow::~MainWindow()
@@ -113,9 +105,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
 
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
-    if (e->modifiers() == Qt::ControlModifier &&
-        e->key() == Qt::Key_Tab) {
-
+    if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Tab) {
         const int tabCount = m_toolBar->tabbar->count();
         int tabIndex = m_toolBar->tabbar->currentIndex() + 1;
 
@@ -130,10 +120,10 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 bool MainWindow::eventFilter(QObject *object, QEvent *event)
 {
     if (event->type() == QEvent::Move) {
-        // QMoveEvent *moveEvent = static_cast<QMoveEvent *>(event);
+        //        QMoveEvent *moveEvent = static_cast<QMoveEvent *>(event);
         if (m_toolBar->tabbar->currentIndex() == 0) {
+            m_homePage->updatePos();
         }
-        m_homePage->updatePos();
     }
 
     return DMainWindow::eventFilter(object, event);
@@ -141,11 +131,9 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event)
 
 void MainWindow::activeWindow()
 {
-    setVisible(!isVisible());
-
-    if (isVisible()) {
-        activateWindow();
-    }
+    setVisible(true);
+    activateWindow();
+    setFocus();
 }
 
 void MainWindow::initWordingAction()
@@ -173,27 +161,13 @@ void MainWindow::initTrayIconAction()
     }
 }
 
-void MainWindow::initThemeAction()
-{
-    /*
-    bool isDark = m_settings->value("darkTheme").toBool();
-
-    if (isDark) {
-        m_themeAction->setChecked(true);
-        DThemeManager::instance()->setTheme("dark");
-        setStyleSheet(Utils::getQssContent(":/qss/dark.qss"));
-    } else {
-        m_themeAction->setChecked(false);
-        DThemeManager::instance()->setTheme("light");
-        setStyleSheet(Utils::getQssContent(":/qss/light.qss"));
-    }
-    */
-}
-
 void MainWindow::enableWording()
 {
     // Windows and MacOS not support.
     connect(qApp->clipboard(), &QClipboard::selectionChanged, [=] {
+        if (m_popupWindow->content()->isVisible()) {
+            return;
+        }
         m_popupWindow->popup(QCursor::pos());
         m_popupWindow->query(qApp->clipboard()->text(QClipboard::Selection));
     });
@@ -234,19 +208,4 @@ void MainWindow::handleTrayIconTriggered()
     }
 
     initTrayIconAction();
-}
-
-void MainWindow::handleThemeTriggered()
-{
-    /*
-    bool isDark = m_settings->value("darkTheme").toBool();
-
-    if (isDark) {
-        m_settings->setValue("darkTheme", false);
-    } else {
-        m_settings->setValue("darkTheme", true);
-    }
-
-    initThemeAction();
-    */
 }

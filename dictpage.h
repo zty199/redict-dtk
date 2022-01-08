@@ -21,12 +21,11 @@
 #define DICTPAGE_H
 
 #include <QWidget>
-#include <QLabel>
 #include <QMediaPlayer>
 
-#include <DApplication>
 #include <DGuiApplicationHelper>
-#include <DImageButton>
+#include <DLabel>
+#include <DIconButton>
 
 #include "youdaoapi.h"
 
@@ -44,19 +43,23 @@ public:
     void queryWord(const QString &text);
 
 private:
+    void initUI();
+    void initConnections();
     void initTheme(DGuiApplicationHelper::ColorType);
     void handleQueryFinished(std::tuple<QString, QString, QString, QString, QString>);
 
 private:
     YoudaoAPI *m_api;
-    QLabel *m_wordLabel;
-    QLabel *m_infoLabel;
-    DImageButton *m_ukBtn;
-    DImageButton *m_usBtn;
-    QLabel *m_ukLabel;
-    QLabel *m_usLabel;
+    DLabel *m_wordLabel;
+    DLabel *m_infoLabel;
+    DIconButton *m_ukBtn;
+    DIconButton *m_usBtn;
+    DLabel *m_ukLabel;
+    DLabel *m_usLabel;
     QMediaPlayer *m_audio;
     ScrollArea *m_scrollArea;
+
+    QString m_text;
 };
 
 #endif

@@ -18,35 +18,37 @@
  */
 
 #include "queryedit.h"
-
-#include <QHBoxLayout>
-#include <QCompleter>
-#include <QKeyEvent>
-#include <QDebug>
-
 #include "utils.h"
 #include "listdelegate.h"
+
+#include <QLayout>
+#include <QKeyEvent>
 
 QueryEdit::QueryEdit(QWidget *parent)
     : QLineEdit(parent)
     , m_listView(new QListView(this))
     , m_listModel(new QStringListModel(this))
     , m_api(YoudaoAPI::instance())
-    , m_closeBtn(new DImageButton(":/images/close_normal.svg",
-                                  ":/images/close_hover.svg",
-                                  ":/images/close_press.svg"))
+    , m_closeBtn(new DIconButton(DStyle::SP_CloseButton))
     , m_iconLabel(new QLabel)
     , m_isEnter(false)
 {
-    QHBoxLayout *layout = new QHBoxLayout;
-    setLayout(layout);
+    QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->setMargin(0);
+    layout->setSpacing(0);
+    layout->addSpacing(9);
 
     m_iconLabel->setFixedSize(18, 18);
+
+    m_closeBtn->setFixedSize(18, 18);
+    m_closeBtn->setIconSize(QSize(18, 18));
+    m_closeBtn->setEnabledCircle(true);
+    m_closeBtn->setFlat(true);
     m_closeBtn->hide();
 
-    layout->addSpacing(3);
     layout->addWidget(m_iconLabel, 0, Qt::AlignLeft | Qt::AlignVCenter);
     layout->addWidget(m_closeBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
+    layout->addSpacing(9);
 
     m_listView->setItemDelegate(new ListDelegate);
     m_listView->setWindowFlags(Qt::ToolTip);
@@ -54,7 +56,7 @@ QueryEdit::QueryEdit(QWidget *parent)
 
     setPlaceholderText("输入要查询的单词或词组");
     setFocusPolicy(Qt::StrongFocus);
-    setTextMargins(30, 0, 30, 0);
+    setTextMargins(30, 0, 32, 0);
     setObjectName("QueryEdit");
     setFixedHeight(35);
 
@@ -76,12 +78,12 @@ QueryEdit::QueryEdit(QWidget *parent)
     });
 
     connect(m_api, &YoudaoAPI::suggestFinished, this, &QueryEdit::handleSuggest);
-    connect(m_closeBtn, &DImageButton::clicked, this, &QLineEdit::clear);
+    connect(m_closeBtn, &DIconButton::clicked, this, &QLineEdit::clear);
 
-    connect(m_listView, &QListView::clicked, this, [=] (const QModelIndex &index) {
+    connect(m_listView, &QListView::clicked, this, [=](const QModelIndex &index) {
         QStringList data = index.data().toString().split(" | ");
         m_isEnter = true;
-        setText(data.first());
+        setText(data.first().trimmed());
         m_listView->hide();
         selectAll();
     });
@@ -91,7 +93,6 @@ QueryEdit::QueryEdit(QWidget *parent)
 
 QueryEdit::~QueryEdit()
 {
-
 }
 
 void QueryEdit::pressEnter()
@@ -101,7 +102,7 @@ void QueryEdit::pressEnter()
     m_isEnter = true;
     if (currentIndex.isValid()) {
         QStringList data = currentIndex.data().toString().split(" | ");
-        setText(data.first());
+        setText(data.first().trimmed());
     }
     m_listView->hide();
     selectAll();
@@ -128,7 +129,6 @@ void QueryEdit::keyPressEvent(QKeyEvent *e)
         int count = m_listView->model()->rowCount();
 
         if (e->key() == Qt::Key_Down) {
-
             int row = currentIndex.row() + 1;
             if (row >= count) {
                 row = 0;
@@ -138,7 +138,6 @@ void QueryEdit::keyPressEvent(QKeyEvent *e)
             m_listView->setCurrentIndex(index);
 
         } else if (e->key() == Qt::Key_Up) {
-
             int row = currentIndex.row() - 1;
             if (row >= count || row < 0) {
                 row = 0;
@@ -166,8 +165,9 @@ void QueryEdit::focusInEvent(QFocusEvent *e)
 
 void QueryEdit::focusOutEvent(QFocusEvent *e)
 {
-    QLineEdit::focusOutEvent(e);
     m_listView->hide();
+
+    QLineEdit::focusOutEvent(e);
 }
 
 void QueryEdit::initTheme(DGuiApplicationHelper::ColorType themeType)
@@ -177,7 +177,7 @@ void QueryEdit::initTheme(DGuiApplicationHelper::ColorType themeType)
     QPixmap iconPixmap;
 
     if (themeType == DGuiApplicationHelper::DarkType) {
-        iconPixmap = Utils::renderSVG(":/images/search_dark.svg", QSize(12, 12));
+        iconPixmap = Utils::renderSVG(":/images/search_dark.svg", QSize(14, 14));
         setStyleSheet("#QueryEdit {"
                       "border: none;"
                       "border-radius: none;"
@@ -188,7 +188,7 @@ void QueryEdit::initTheme(DGuiApplicationHelper::ColorType themeType)
                       "background-color: #2D2D2D;"
                       "}");
     } else {
-        iconPixmap = Utils::renderSVG(":/images/search_light.svg", QSize(12, 12));
+        iconPixmap = Utils::renderSVG(":/images/search_light.svg", QSize(14, 14));
         setStyleSheet("#QueryEdit {"
                       "border: none;"
                       "border-radius: none;"
@@ -234,7 +234,7 @@ void QueryEdit::handleSuggest(const QStringList &list)
         break;
     }
 
-    m_listView->setFixedWidth(width() - 40);
+    m_listView->setFixedWidth(width() - 20);
     QPoint p(0, height());
     int x = mapToGlobal(p).x() + 20;
     int y = mapToGlobal(p).y() + 1;

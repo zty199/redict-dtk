@@ -55,12 +55,10 @@ private:
     void activeWindow();
     void initWordingAction();
     void initTrayIconAction();
-    void initThemeAction();
     void enableWording();
     void disableWording();
     void handleWordingTriggered();
     void handleTrayIconTriggered();
-    void handleThemeTriggered();
 
 private:
     QStackedLayout *m_mainLayout;
@@ -74,7 +72,6 @@ private:
     QMenu *m_menu;
     QAction *m_wordingAction;
     QAction *m_trayIconAction;
-    QAction *m_themeAction;
     bool m_enableWording;
     bool m_enableTrayIcon;
 };

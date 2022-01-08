@@ -41,6 +41,9 @@ private:
 
 signals:
     void currentChanged(int index);
+
+private:
+    QString m_activeColor;
 };
 
 #endif

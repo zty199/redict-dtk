@@ -18,44 +18,80 @@
  */
 
 #include "popupcontent.h"
-#include <QScrollArea>
-#include <QVBoxLayout>
+#include "widgets/scrollarea.h"
+
+#include <QLayout>
 #include <QMouseEvent>
-#include <QLabel>
+
+#include <DBlurEffectWidget>
+#include <DGuiApplicationHelper>
+#include <DPaletteHelper>
+#include <DPlatformTheme>
 
 PopupContent::PopupContent(QWidget *parent)
-    : DAbstractDialog(parent),
-      m_queryLabel(new QLabel),
-      m_transLabel(new QLabel)
+    : DBlurEffectWidget(parent)
+    , m_queryLabel(new DLabel)
+    , m_transLabel(new DLabel)
+    , m_detailBtn(new DCommandLinkButton(tr("详情")))
 {
-    DBlurEffectWidget *bgWidget = new DBlurEffectWidget(this);
-    bgWidget->setBlendMode(DBlurEffectWidget::BehindWindowBlend);
-    bgWidget->setMaskColor(DBlurEffectWidget::LightColor);
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Tool);
+    setFixedSize(300, 225);
 
-    QScrollArea *contentFrame = new QScrollArea;
+    //    setBlendMode(DBlurEffectWidget::BehindWindowBlend);
+    //    setMaskColor(DBlurEffectWidget::LightColor);
+
+    ScrollArea *contentFrame = new ScrollArea;
     contentFrame->setWidgetResizable(true);
-    contentFrame->setStyleSheet(contentFrame->styleSheet()
-                                + "QScrollArea { background: transparent; }" 
-                                + "QScrollArea > QWidget > QWidget { background: transparent; }");
 
     QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->addWidget(contentFrame);
     layout->setMargin(0);
+    layout->setSpacing(0);
+    layout->addWidget(contentFrame);
 
     QWidget *mainWidget = new QWidget;
     QVBoxLayout *mainLayout = new QVBoxLayout(mainWidget);
     contentFrame->setWidget(mainWidget);
 
-    mainLayout->setContentsMargins(10, 10, 10, 10);
-    mainLayout->addWidget(m_queryLabel);
+    QWidget *queryWidget = new QWidget;
+    QHBoxLayout *queryLayout = new QHBoxLayout(queryWidget);
+    queryLayout->setMargin(0);
+    queryLayout->setSpacing(0);
+    queryLayout->addWidget(m_queryLabel, 0, Qt::AlignLeft | Qt::AlignVCenter);
+    queryLayout->addWidget(m_detailBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
+
+    mainLayout->setContentsMargins(10, 10, 25, 10);
+    mainLayout->setSpacing(0);
+    mainLayout->setAlignment(Qt::AlignTop);
+    mainLayout->addWidget(queryWidget);
+    mainLayout->addSpacing(5);
     mainLayout->addWidget(m_transLabel);
     mainLayout->addStretch();
+
+    QFont font = m_queryLabel->font();
+    font.setPixelSize(24);
+    m_queryLabel->setFont(font);
+    font.setPixelSize(14);
+    m_detailBtn->setFont(font);
+    m_transLabel->setFont(font);
 
     m_queryLabel->setWordWrap(true);
     m_transLabel->setWordWrap(true);
 
-    setFixedSize(300, 200);
-    bgWidget->resize(size());
+    m_transLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    m_queryLabel->setMaximumWidth(230);
+    m_queryLabel->setElideMode(Qt::ElideRight);
+
+    connect(m_detailBtn, &DCommandLinkButton::clicked, this, [=]() {
+        emit detailQueried(m_queryLabel->text());
+        hide();
+    });
+
+    connect(DGuiApplicationHelper::instance()->systemTheme(), &DPlatformTheme::activeColorChanged, this, [=](QColor activeColor) {
+        DPalette palette = DPaletteHelper::instance()->palette(m_queryLabel);
+        palette.setColor(DPalette::WindowText, activeColor);
+        DPaletteHelper::instance()->setPalette(m_queryLabel, palette);
+    });
 }
 
 PopupContent::~PopupContent()
@@ -65,11 +101,16 @@ PopupContent::~PopupContent()
 void PopupContent::mouseMoveEvent(QMouseEvent *e)
 {
     // disable move window.
-    e->ignore();
+    e->accept();
 }
 
 void PopupContent::updateContent(std::tuple<QString, QString, QString, QString, QString> data)
 {
     m_queryLabel->setText(std::get<0>(data));
-    m_transLabel->setText(std::get<3>(data));
+    m_queryLabel->setToolTip(std::get<0>(data));
+
+    QString trans = std::get<3>(data);
+    trans.replace("<br>", "\n");
+    trans.remove("</br>");
+    m_transLabel->setText(trans);
 }

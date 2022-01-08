@@ -22,6 +22,7 @@
 
 #include <QWidget>
 #include <QStackedLayout>
+
 #include "popupcontent.h"
 #include "youdaoapi.h"
 
@@ -35,17 +36,21 @@ class PopupWindow : public QWidget
 public:
     PopupWindow(QWidget *parent = nullptr);
     ~PopupWindow();
+    PopupContent *content();
 
 protected:
     void paintEvent(QPaintEvent *);
     void mouseReleaseEvent(QMouseEvent *);
 
+private:
+    void onGlobMousePress(const int &x, const int &y);
+
+signals:
+    void detailQueried(QString);
+
 public slots:
     void popup(const QPoint &pos);
     void query(const QString &text);
-
-private:
-    void onGlobMousePress(const int &x, const int &y);
 
 private:
     QStackedLayout *m_layout;

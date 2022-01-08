@@ -19,88 +19,89 @@
 
 #include "toolbar.h"
 
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QDebug>
-#include <QEvent>
+#include <QLayout>
 #include <QMouseEvent>
+
+#include <DPlatformTheme>
 
 #include "utils.h"
 
 ToolBar::ToolBar(QWidget *parent)
     : QWidget(parent)
+    , m_activeColor("")
 {
-    QPixmap iconPixmap = Utils::renderSVG(":/images/redict.svg", QSize(22, 22));
-    QLabel *iconLabel = new QLabel;
-    iconLabel->setPixmap(iconPixmap);
-
     tabbar = new QTabBar;
     tabbar->addTab("词典");
     tabbar->addTab("翻译");
     tabbar->setFocusPolicy(Qt::NoFocus);
     tabbar->installEventFilter(this);
 
-    initTheme(DGuiApplicationHelper::instance()->themeType());
-
     QHBoxLayout *layout = new QHBoxLayout(this);
-    // layout->addSpacing(5);
-    // layout->addWidget(iconLabel);
-    // layout->addSpacing(5);
     layout->addWidget(tabbar);
     layout->addStretch();
     layout->setMargin(0);
 
-    connect(tabbar, &QTabBar::currentChanged, this, [=] (int current) { emit currentChanged(current); });
+    connect(tabbar, &QTabBar::currentChanged, this, [=](int current) {
+        emit currentChanged(current);
+    });
 
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, &ToolBar::initTheme);
+
+    connect(DGuiApplicationHelper::instance()->systemTheme(), &DPlatformTheme::activeColorChanged, this, [=](QColor activeColor) {
+        m_activeColor = QString::number(activeColor.rgb(), 16).replace(0, 2, '#');
+        initTheme(DGuiApplicationHelper::instance()->themeType());
+    });
+
+    emit DGuiApplicationHelper::instance()->systemTheme()->activeColorChanged(DGuiApplicationHelper::instance()->applicationPalette().highlight().color());
 }
 
 ToolBar::~ToolBar()
 {
-
 }
 
 void ToolBar::initTheme(DGuiApplicationHelper::ColorType themeType)
 {
     if (themeType == DGuiApplicationHelper::DarkType) {
-        tabbar->setStyleSheet(styleSheet() +
-                              "QTabBar::tab {"
-                              "font-size: 18px;"
-                              "height: 30px;"
-                              "padding: 9px;"
-                              "border: 0px;"
-                              "background-color: transparent;"
-                              "border-bottom: 3px solid transparent;"
-                              "width: 55px;"
-                              "color: palette(text);"
-                              "}"
-                              "QTabBar::tab:hover {"
-                              "background-color: #2F2F2F;"
-                              "}"
-                              "QTabBar::tab:selected {"
-                              "color: #2CA7F8;"
-                              "border: 0px;"
-                              "border-bottom: 3px solid #2CA7F8;"
-                              "}");
+        tabbar->setStyleSheet(styleSheet() + "QTabBar::tab {"
+                                             "font-size: 18px;"
+                                             "height: 30px;"
+                                             "padding: 9px;"
+                                             "border: 0px;"
+                                             "background-color: transparent;"
+                                             "border-bottom: 3px solid transparent;"
+                                             "width: 55px;"
+                                             "color: palette(text);"
+                                             "}"
+                                             "QTabBar::tab:hover {"
+                                             "background-color: #2F2F2F;"
+                                             "}"
+                                             "QTabBar::tab:selected {"
+                                             "color: "
+                              + m_activeColor + ";"
+                                                "border: 0px;"
+                                                "border-bottom: 3px solid "
+                              + m_activeColor + ";"
+                                                "}");
     } else {
-        tabbar->setStyleSheet(styleSheet() +
-                              "QTabBar::tab {"
-                              "font-size: 18px;"
-                              "height: 30px;"
-                              "padding: 9px;"
-                              "border: 0px;"
-                              "background-color: transparent;"
-                              "border-bottom: 3px solid transparent;"
-                              "width: 55px;"
-                              "color: palette(text);"
-                              "}"
-                              "QTabBar::tab:hover {"
-                              "background-color: #EDEDED;"
-                              "}"
-                              "QTabBar::tab:selected {"
-                              "color: #2CA7F8;"
-                              "border: 0px;"
-                              "border-bottom: 3px solid #2CA7F8;"
-                              "}");
+        tabbar->setStyleSheet(styleSheet() + "QTabBar::tab {"
+                                             "font-size: 18px;"
+                                             "height: 30px;"
+                                             "padding: 9px;"
+                                             "border: 0px;"
+                                             "background-color: transparent;"
+                                             "border-bottom: 3px solid transparent;"
+                                             "width: 55px;"
+                                             "color: palette(text);"
+                                             "}"
+                                             "QTabBar::tab:hover {"
+                                             "background-color: #EDEDED;"
+                                             "}"
+                                             "QTabBar::tab:selected {"
+                                             "color: "
+                              + m_activeColor + ";"
+                                                "border: 0px;"
+                                                "border-bottom: 3px solid "
+                              + m_activeColor + ";"
+                                                "}");
     }
 }

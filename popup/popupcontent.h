@@ -20,14 +20,13 @@
 #ifndef POPUPCONTENT_H
 #define POPUPCONTENT_H
 
-#include "dabstractdialog.h"
-#include "dblureffectwidget.h"
-
-#include <QLabel>
+#include <DBlurEffectWidget>
+#include <DLabel>
+#include <DCommandLinkButton>
 
 DWIDGET_USE_NAMESPACE
 
-class PopupContent : public DAbstractDialog
+class PopupContent : public DBlurEffectWidget
 {
     Q_OBJECT
 
@@ -38,12 +37,16 @@ public:
 protected:
     void mouseMoveEvent(QMouseEvent *);
 
+signals:
+    void detailQueried(QString);
+
 public slots:
     void updateContent(std::tuple<QString, QString, QString, QString, QString>);
 
 private:
-    QLabel *m_queryLabel;
-    QLabel *m_transLabel;
+    DLabel *m_queryLabel;
+    DLabel *m_transLabel;
+    DCommandLinkButton *m_detailBtn;
 };
 
 #endif

@@ -29,12 +29,10 @@ DWIDGET_USE_NAMESPACE
 ListDelegate::ListDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
 {
-
 }
 
 ListDelegate::~ListDelegate()
 {
-
 }
 
 void ListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -62,7 +60,6 @@ void ListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
         painter->fillRect(rect, (isDarkTheme) ? QColor("#045998") : QColor("#D0E8FA"));
         painter->setPen((isDarkTheme) ? QColor("#FFFFFF") : QColor("#2CA7F8"));
     } else {
-
         if (isDarkTheme) {
             painter->setPen(Qt::white);
         } else {
@@ -88,7 +85,7 @@ void ListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
     painter->drawText(explainRect, Qt::AlignLeft | Qt::AlignVCenter, explainText);
 }
 
-QSize ListDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+QSize ListDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     Q_UNUSED(option)
     Q_UNUSED(index)

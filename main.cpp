@@ -40,6 +40,8 @@ int main(int argc, char *argv[])
     app.setApplicationAcknowledgementPage("https://github.com/rekols");
     app.setProductIcon(QIcon(":/images/redict.svg"));
     app.setProductName(DApplication::translate("Main", "Rekols's Dictionary"));
+    app.setApplicationName(QObject::tr("Redict"));
+    app.setApplicationDisplayName(QObject::tr("Redict"));
     app.setApplicationDescription(DApplication::translate("Main", "一款 Deepin 平台下的词典，基于 Qt / DTK 开发，占用内存小，使用有道词典 API，内容版权归网易有道公司所有。"));
 
     if (!app.setSingleInstance("redict")) {

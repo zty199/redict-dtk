@@ -27,12 +27,10 @@
 Utils::Utils(QObject *parent)
     : QObject(parent)
 {
-
 }
 
 Utils::~Utils()
 {
-
 }
 
 QString Utils::getQssContent(const QString &filePath)
@@ -56,8 +54,7 @@ QPixmap Utils::renderSVG(const QString &path, const QSize &size)
         reader.setScaledSize(size * ratio);
         pixmap = QPixmap::fromImage(reader.read());
         pixmap.setDevicePixelRatio(ratio);
-    }
-    else {
+    } else {
         pixmap.load(path);
     }
     return pixmap;

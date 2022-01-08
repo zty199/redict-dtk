@@ -27,10 +27,9 @@
 
 #include <DApplication>
 #include <DGuiApplicationHelper>
+#include <DIconButton>
 
 #include "youdaoapi.h"
-#include "dsvgrenderer.h"
-#include "dimagebutton.h"
 
 DWIDGET_USE_NAMESPACE
 
@@ -58,7 +57,7 @@ private:
     QListView *m_listView;
     QStringListModel *m_listModel;
     YoudaoAPI *m_api;
-    DImageButton *m_closeBtn;
+    DIconButton *m_closeBtn;
     QLabel *m_iconLabel;
     bool m_isEnter;
 };
